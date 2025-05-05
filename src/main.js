@@ -25,6 +25,7 @@ window.addEventListener('DOMContentLoaded', () => {
   app.innerHTML = `
     <h1>Turbo F1</h1>
     <div id="chart"></div>
+    <div id="inertiaDisplay" style="margin-top: 0.5rem; font-style: italic; color: #444;"></div>
     <button id="raceButton" style="margin-top: 1rem;">Race!</button>
     <div id="raceTrack" style="position: relative; height: 60px; background: #ddd; margin-top: 1rem;">
       <div id="car" style="
