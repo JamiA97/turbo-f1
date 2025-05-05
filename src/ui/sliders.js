@@ -6,7 +6,7 @@ export default function initUI(onUpdate) {
     { id: 'turbineDiameter', label: 'Turbine Diameter (mm)', min: 30, max: 80, default: 50 },
     { id: 'backsweep', label: 'Blade Backsweep Angle (°)', min: 0, max: 60, default: 30 },
     { id: 'arRatio', label: 'A/R Ratio', min: 0.3, max: 1.5, step: 0.1, default: 0.9 },
-    { id: 'inertia', label: 'Shaft Inertia (g⋅cm²)', min: 1, max: 10, step: 0.5, default: 5 },
+    //{ id: 'inertia', label: 'Shaft Inertia (g⋅cm²)', min: 1, max: 10, step: 0.5, default: 5 },
   ];
 
   const state = {};

@@ -1,6 +1,29 @@
 import { Chart } from 'chart.js/auto';
+import { setTorqueCurve } from '../simulation/racePhysics.js';
 
 let chartInstance = null;
+
+export function updateChart(config) {
+  if (!chartInstance) return;
+
+  const newTorqueCurve = generateTorqueCurve(config);
+  chartInstance.data.datasets[0].data = newTorqueCurve;
+  chartInstance.update();
+
+  // Calculate turbo inertia
+  const comp = config.compDiameter ?? 50;
+  const turbine = config.turbineDiameter ?? 50;
+  const inertia = 0.001 * (comp ** 2 + turbine ** 2); // simple model
+
+  // Display it
+  const inertiaDisplay = document.getElementById('inertiaDisplay');
+  if (inertiaDisplay) {
+    inertiaDisplay.textContent = `Computed Turbo Inertia: ${inertia.toFixed(2)} (arbitrary units)`;
+  }
+
+  // Pass curve + config to simulation
+  setTorqueCurve(newTorqueCurve, config);
+}
 
 function drawChart() {
   const canvas = document.createElement('canvas');
@@ -36,30 +59,25 @@ function drawChart() {
 
 function generateTorqueCurve(config) {
   const rpm = Array.from({ length: 20 }, (_, i) => 1000 + i * 250);
-  const torque = rpm.map(r => {
-    const comp = config.compDiameter ?? 50;
-    const turbine = config.turbineDiameter ?? 50;
-    const backsweep = config.backsweep ?? 30;
-    const ar = config.arRatio ?? 0.9;
-    const inertia = config.inertia ?? 5;
 
-    const peakRPM = 3000 + (comp - 50) * 10 + (ar - 0.9) * 1000;
-    const peakTorque = 200 + (turbine - 50) * 2 - backsweep * 0.5;
-    const width = 1000 + backsweep * 10 + inertia * 100;
+  const {
+    compDiameter = 50,
+    turbineDiameter = 50,
+    backsweep = 30,
+    arRatio = 0.9,
+    inertia = 5,
+  } = config;
 
-    return Math.max(0, peakTorque * Math.exp(-((r - peakRPM) ** 2) / (2 * width ** 2)));
+  const peakRPM = 3000 + (compDiameter - 50) * 20 + (arRatio - 0.9) * 2000;
+  const peakTorque = 200 + (turbineDiameter - 50) * 4 - backsweep * 1;
+  const width = 800 + backsweep * 12 + inertia * 150;
+
+  return rpm.map(r => {
+    const torque = peakTorque * Math.exp(-((r - peakRPM) ** 2) / (2 * width ** 2));
+    return Math.round(Math.max(0, torque));
   });
-
-  return torque.map(t => Math.round(t));
-}
-
-function updateChart(state) {
-  if (!chartInstance) return;
-  const newTorqueCurve = generateTorqueCurve(state);
-  chartInstance.data.datasets[0].data = newTorqueCurve;
-  chartInstance.update();
 }
 
 export default drawChart;
-export { updateChart };
+//export { updateChart };
 
