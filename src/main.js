@@ -3,10 +3,12 @@ import initUI from './ui/sliders.js';
 import drawChart, { updateChart } from './ui/charts.js';
 import { setupTurboModel } from './simulation/turboModel.js';
 import { setupRace } from './simulation/racePhysics.js';
+import drawCompressorMap from './ui/compressorMap.js';
 
 function onSliderUpdate(state) {
   console.log("Turbo config updated:", state);
   updateChart(state);
+  drawCompressorMap(state);  
 }
 
 function createLayout() {
@@ -15,8 +17,20 @@ function createLayout() {
   const title = document.createElement('h1');
   title.textContent = 'Turbo F1';
 
+  const chartRow = document.createElement('div');
+  chartRow.style.display = 'flex';
+  chartRow.style.flexDirection = 'row';
+  chartRow.style.gap = '2rem';  
+
+  // Compressor Map (left)
+  const mapContainer = document.createElement('div');
+  mapContainer.id = 'compressorMap';
+  mapContainer.style.width = '300px';
+  mapContainer.style.height = '300px';
+
   const chartContainer = document.createElement('div');
   chartContainer.id = 'chart';
+  chartContainer.style.flex = '1';  
 
   const inertiaDisplay = document.createElement('div');
   inertiaDisplay.id = 'inertiaDisplay';
@@ -55,8 +69,16 @@ function createLayout() {
   lapTime.style.marginTop = '1rem';
   lapTime.style.fontWeight = 'bold';
 
+  //const mapContainer = document.createElement('div');
+  //mapContainer.id = 'compressorMap';
+  //mapContainer.style.marginTop = '2rem';
+  //app.appendChild(mapContainer);
+
+
   app.appendChild(title);
+  app.appendChild(mapContainer);  
   app.appendChild(chartContainer);
+  app.appendChild(chartRow);  
   app.appendChild(inertiaDisplay);
   app.appendChild(raceButton);
   app.appendChild(raceTrack);
@@ -78,6 +100,7 @@ window.addEventListener('DOMContentLoaded', () => {
   };
 
   updateChart(initialState);
+  drawCompressorMap(initialState);  
   setupTurboModel();
   setupRace();
 });
