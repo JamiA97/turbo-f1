@@ -15,28 +15,31 @@ export function setupRace() {
 }
 
 function runRace(state) {
-
   if (!state) {
     alert("Turbo settings not initialized. Please adjust a slider first.");
     return;
-  }  
-
+  }
 
   const rpmArray = generateRPMArray();
   const trackWidth = document.getElementById('raceTrack').clientWidth - 40;
   const car = document.getElementById('car');
   const lapTimeEl = document.getElementById('lapTime');
 
-  console.log('🏁 runRace called with state:', state); // <--- Add this
+  console.log('🏁 runRace called with state:', state);
 
-  const comp = state.compDiameter ?? 50;
-  const turbine = state.turbineDiameter ?? 50;
+  const compOD = state.compOD ?? 50;
+  const turbOD = state.turbOD ?? 50;
   const torqueCurve = currentTorqueCurve;
 
-  // Model 1: quadratic inertia
-  const inertia = 0.001 * (comp ** 2 + turbine ** 2);
+  // --- Efficiency model (based on compOD / turbOD)
+  const effRatio = compOD / turbOD;
+  let efficiency = 0.85 - Math.abs(effRatio - 1.1) * 0.2 / 0.3;
+  efficiency = Math.max(0.65, Math.min(0.85, efficiency));
 
-  let x = 0;
+  // --- Inertia from geometry
+  const inertia = 0.001 * (compOD ** 2 + turbOD ** 2);
+
+  // --- Simulation state
   let v = 0;
   let t = 0;
   const dt = 0.05;
@@ -46,10 +49,12 @@ function runRace(state) {
   function animate() {
     const rpm = 1000 + v * 50;
     const torque = interpolate(rpm, rpmArray, torqueCurve);
+    
+    const baseTorque = torque * efficiency;
 
     const boostRampUpTime = inertia * 2;
     const boostFactor = Math.min(1, t / boostRampUpTime);
-    const effectiveTorque = torque * boostFactor;
+    const effectiveTorque = baseTorque * boostFactor;
 
     const a = torqueToAcceleration(effectiveTorque);
     v += a * dt;
@@ -71,7 +76,6 @@ function runRace(state) {
   lapTimeEl.textContent = '';
   requestAnimationFrame(animate);
 }
-
 
 
 function interpolate(x, xArr, yArr) {

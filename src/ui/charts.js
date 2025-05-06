@@ -6,22 +6,27 @@ let chartInstance = null;
 export function updateChart(config) {
   if (!chartInstance) return;
 
+  // --- Compute efficiency
+  const { compOD = 50, turbOD = 50 } = config;
+  const effRatio = compOD / turbOD;
+  let efficiency = 0.85 - Math.abs(effRatio - 1.1) * 0.2 / 0.3;
+  efficiency = Math.max(0.65, Math.min(0.85, efficiency));
+
+  // --- Compute inertia
+  const inertia = 0.001 * (compOD ** 2 + turbOD ** 2);
+
+  // --- Update UI
+  const inertiaDisplay = document.getElementById('inertiaDisplay');
+  if (inertiaDisplay) {
+    inertiaDisplay.textContent = `Turbo Inertia: ${inertia.toFixed(2)} | Efficiency: ${(efficiency * 100).toFixed(1)}%`;
+  }
+
+  // --- Update chart
   const newTorqueCurve = generateTorqueCurve(config);
   chartInstance.data.datasets[0].data = newTorqueCurve;
   chartInstance.update();
 
-  // Calculate turbo inertia
-  const comp = config.compDiameter ?? 50;
-  const turbine = config.turbineDiameter ?? 50;
-  const inertia = 0.001 * (comp ** 2 + turbine ** 2); // simple model
-
-  // Display it
-  const inertiaDisplay = document.getElementById('inertiaDisplay');
-  if (inertiaDisplay) {
-    inertiaDisplay.textContent = `Computed Turbo Inertia: ${inertia.toFixed(2)} (arbitrary units)`;
-  }
-
-  // Pass curve + config to simulation
+  // --- Send to simulation
   setTorqueCurve(newTorqueCurve, config);
 }
 
@@ -59,24 +64,23 @@ function drawChart() {
 
 function generateTorqueCurve(config) {
   const rpm = Array.from({ length: 20 }, (_, i) => 1000 + i * 250);
-
   const {
-    compDiameter = 50,
-    turbineDiameter = 50,
-    backsweep = 30,
-    arRatio = 0.9,
-    inertia = 5,
+    compOD = 50,
+    compInlet = 30,
+    turbOD = 50,
+    turbOutlet = 40,
   } = config;
 
-  const peakRPM = 3000 + (compDiameter - 50) * 20 + (arRatio - 0.9) * 2000;
-  const peakTorque = 200 + (turbineDiameter - 50) * 4 - backsweep * 1;
-  const width = 800 + backsweep * 12 + inertia * 150;
+  const peakTorque = 200 + (turbOD - turbOutlet); // Base torque, no η here
+  const peakRPM = 3000 + (compOD - 50) * 25;
+  const width = 800 + (compOD - compInlet) * 10 + (turbOD - turbOutlet) * 20;
 
   return rpm.map(r => {
     const torque = peakTorque * Math.exp(-((r - peakRPM) ** 2) / (2 * width ** 2));
     return Math.round(Math.max(0, torque));
   });
 }
+
 
 export default drawChart;
 //export { updateChart };

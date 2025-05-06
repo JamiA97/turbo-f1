@@ -9,39 +9,64 @@ function onSliderUpdate(state) {
   updateChart(state);
 }
 
+function createLayout() {
+  const app = document.getElementById('app');
+
+  const title = document.createElement('h1');
+  title.textContent = 'Turbo F1';
+
+  const chartContainer = document.createElement('div');
+  chartContainer.id = 'chart';
+
+  const inertiaDisplay = document.createElement('div');
+  inertiaDisplay.id = 'inertiaDisplay';
+  inertiaDisplay.style.marginTop = '0.5rem';
+  inertiaDisplay.style.fontStyle = 'italic';
+  inertiaDisplay.style.color = '#444';
+
+  const raceButton = document.createElement('button');
+  raceButton.id = 'raceButton';
+  raceButton.textContent = 'Race!';
+  raceButton.style.marginTop = '1rem';
+
+  const raceTrack = document.createElement('div');
+  raceTrack.id = 'raceTrack';
+  raceTrack.style.position = 'relative';
+  raceTrack.style.height = '60px';
+  raceTrack.style.background = '#ddd';
+  raceTrack.style.marginTop = '1rem';
+
+  const car = document.createElement('div');
+  car.id = 'car';
+  Object.assign(car.style, {
+    position: 'absolute',
+    left: '0',
+    top: '10px',
+    width: '40px',
+    height: '20px',
+    background: 'red',
+    borderRadius: '5px',
+    transition: 'left 0.05s linear',
+  });
+  raceTrack.appendChild(car);
+
+  const lapTime = document.createElement('div');
+  lapTime.id = 'lapTime';
+  lapTime.style.marginTop = '1rem';
+  lapTime.style.fontWeight = 'bold';
+
+  app.appendChild(title);
+  app.appendChild(chartContainer);
+  app.appendChild(inertiaDisplay);
+  app.appendChild(raceButton);
+  app.appendChild(raceTrack);
+  app.appendChild(lapTime);
+}
+
 window.addEventListener('DOMContentLoaded', () => {
   console.log("Turbo F1 loaded");
 
-  const app = document.getElementById('app');
-
-  //app.innerHTML = `
-  //  <h1>Turbo F1</h1>
-  //  <div id="chart"></div>
-  //  <button id="raceButton" style="margin-top: 1rem;">Race!</button>
-  //  <div id="raceTrack" style="height: 100px; margin-top: 1rem;"></div>
-  //  <div id="lapTime" style="margin-top: 1rem; font-weight: bold;"></div>
-  //`;
-  
-  app.innerHTML = `
-    <h1>Turbo F1</h1>
-    <div id="chart"></div>
-    <div id="inertiaDisplay" style="margin-top: 0.5rem; font-style: italic; color: #444;"></div>
-    <button id="raceButton" style="margin-top: 1rem;">Race!</button>
-    <div id="raceTrack" style="position: relative; height: 60px; background: #ddd; margin-top: 1rem;">
-      <div id="car" style="
-        position: absolute;
-        left: 0;
-        top: 10px;
-        width: 40px;
-        height: 20px;
-        background: red;
-        border-radius: 5px;
-        transition: left 0.05s linear;
-      "></div>
-    </div>
-    <div id="lapTime" style="margin-top: 1rem; font-weight: bold;"></div>
-  `;  
-
+  createLayout();
   initUI(onSliderUpdate);
   drawChart();
 
@@ -52,8 +77,7 @@ window.addEventListener('DOMContentLoaded', () => {
     arRatio: 0.9,
   };
 
-  updateChart(initialState); // ensures chart + currentState are initialized  
-
+  updateChart(initialState);
   setupTurboModel();
   setupRace();
 });

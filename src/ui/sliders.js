@@ -1,12 +1,19 @@
 export default function initUI(onUpdate) {
   const app = document.getElementById('app');
 
+  //const turboParams = [
+  //  { id: 'compDiameter', label: 'Compressor Out Diameter (mm)', min: 30, max: 80, default: 50 },
+  //  { id: 'turbineDiameter', label: 'Turbine In Diameter (mm)', min: 30, max: 80, default: 50 },
+  //  { id: 'compInletDiameter', label: 'Compressor Inlet Diameter (mm)', min: 0, max: 60, default: 30 },
+  //  { id: 'TurbineOutletDiameter', label: 'Turbine Outlet Diameter (mm)', min: 30, max: 70, step: 1, default: 50 },
+  //  { id: 'inertia', label: 'Shaft Inertia (g⋅cm²)', min: 1, max: 10, step: 0.5, default: 5 },
+  //];
+
   const turboParams = [
-    { id: 'compDiameter', label: 'Compressor Diameter (mm)', min: 30, max: 80, default: 50 },
-    { id: 'turbineDiameter', label: 'Turbine Diameter (mm)', min: 30, max: 80, default: 50 },
-    { id: 'backsweep', label: 'Blade Backsweep Angle (°)', min: 0, max: 60, default: 30 },
-    { id: 'arRatio', label: 'A/R Ratio', min: 0.3, max: 1.5, step: 0.1, default: 0.9 },
-    //{ id: 'inertia', label: 'Shaft Inertia (g⋅cm²)', min: 1, max: 10, step: 0.5, default: 5 },
+    { id: 'compOD', label: 'Compressor Outer Diameter (mm)', min: 30, max: 80, default: 50 },
+    { id: 'compInlet', label: 'Compressor Inlet Diameter (mm)', min: 10, max: 60, default: 30 },
+    { id: 'turbOD', label: 'Turbine Inlet Diameter (mm)', min: 30, max: 80, default: 50 },
+    { id: 'turbOutlet', label: 'Turbine Outlet Diameter (mm)', min: 10, max: 70, default: 40 },
   ];
 
   const state = {};
@@ -19,7 +26,7 @@ export default function initUI(onUpdate) {
     wrapper.className = 'slider-wrapper';
 
     const label = document.createElement('label');
-    label.for = param.id;
+    label.htmlFor = param.id;
     label.textContent = `${param.label}: `;
 
     const valueSpan = document.createElement('span');
@@ -38,7 +45,27 @@ export default function initUI(onUpdate) {
 
     slider.addEventListener('input', () => {
       state[param.id] = parseFloat(slider.value);
-      valueSpan.textContent = slider.value;
+        // Constraint logic
+      if (param.id === 'compInlet') {
+        const maxInlet = state['compOD'] * 0.85;
+        if (state['compInlet'] > maxInlet) {
+          state['compInlet'] = maxInlet;
+          slider.value = maxInlet.toFixed(1);
+          //valueSpan.textContent = slider.value;
+        }  
+      }
+
+      if (param.id === 'turbOutlet') {
+        const maxOutlet = state['turbOD'] * 0.85;
+        if (state['turbOutlet'] > maxOutlet) {
+          state['turbOutlet'] = maxOutlet;
+          slider.value = maxOutlet.toFixed(1);
+          //valueSpan.textContent = slider.value;
+        }
+      }    
+
+      slider.value = state[param.id].toFixed(1);
+      valueSpan.textContent = slider.value;  
       if (onUpdate) onUpdate(state);
     });
 
