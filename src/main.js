@@ -75,15 +75,24 @@ function createLayout() {
   //app.appendChild(mapContainer);
 
 
+  //app.appendChild(title);
+  //app.appendChild(mapContainer);
+  //app.appendChild(chartContainer);
+  //app.appendChild(chartRow);  
+  //app.appendChild(inertiaDisplay);
+  //app.appendChild(raceButton);
+  //app.appendChild(raceTrack);
+  //app.appendChild(lapTime);
+
   app.appendChild(title);
-  app.appendChild(mapContainer);  
-  app.appendChild(chartContainer);
-  app.appendChild(chartRow);  
+  chartRow.appendChild(mapContainer);
+  chartRow.appendChild(chartContainer);
+  app.appendChild(chartRow);
   app.appendChild(inertiaDisplay);
   app.appendChild(raceButton);
   app.appendChild(raceTrack);
   app.appendChild(lapTime);
-}
+  }
 
 window.addEventListener('DOMContentLoaded', () => {
   console.log("Turbo F1 loaded");

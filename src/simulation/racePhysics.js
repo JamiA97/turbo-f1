@@ -90,7 +90,7 @@ function interpolate(x, xArr, yArr) {
 
 function torqueToAcceleration(torque) {
   const mass = 1000;
-  const gearRatio = 10;
+  const gearRatio = 50;
   const force = torque * gearRatio;
   return force / mass;
 }

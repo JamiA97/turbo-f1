@@ -9,8 +9,37 @@ export default function drawCompressorMap(config) {
   const flowBase = 0.3 + (compInlet - 30) * 0.005;
   const prBase = 1.8 + (compOD - 50) * 0.02;
 
-  const peakTorque = { x: flowBase - 0.05, y: prBase - 0.2 };
-  const peakPower = { x: flowBase + 0.05, y: prBase + 0.3 };
+  //const peakTorque = { x: flowBase - 0.05, y: prBase - 0.2 };
+  //const peakPower = { x: flowBase + 0.05, y: prBase + 0.3 };
+
+  const peakTorque = { x: 0.4, y: 2.8 }; // typical lower-flow, lower-PR
+  const peakPower  = { x: 0.8, y: 3.5 }; // typical higher-flow, higher-PR
+
+  // Base compressor map polygon
+  const baseMap = [
+    { x: 0.1111, y: 1.5 },
+    { x: 0.4444, y: 1.5 },
+    { x: 0.7222, y: 2 },
+    { x: 0.8889, y: 2.5 },
+    { x: 0.9444, y: 3 },
+    { x: 1.0000, y: 3.5 },
+    { x: 0.9778, y: 4 },
+    { x: 0.9444, y: 4.5 },
+    { x: 0.5556, y: 5 },
+    { x: 0.1111, y: 1.5 },
+  ];
+
+  // Geometry-based map shift
+  const dx = (compInlet - 30) * 0.0025;
+  const dy = (compOD - 50) * 0.01;
+
+  // Transform function
+  function shiftedMapPoints(map, dx, dy) {
+    return map.map(p => ({ x: p.x + dx, y: p.y + dy }));
+  }
+
+// Apply shift
+const shiftedMap = shiftedMapPoints(baseMap, dx, dy);
 
   // --- Efficiency blob center (fixed for now)
   const effCenter = { x: flowBase, y: prBase };
@@ -48,12 +77,16 @@ export default function drawCompressorMap(config) {
           parsing: false,
         },
         {
-          label: 'High Efficiency Region',
-          data: generateEfficiencyEllipse(effCenter, effRadiusX, effRadiusY, 40),
-          backgroundColor: 'rgba(0, 200, 0, 0.2)',
-          pointRadius: 1,
-          showLine: false,
+          label: 'Compressor Map Envelope',
+          data: shiftedMap,  // ✅ use the adjusted points
+          backgroundColor: 'rgba(100, 200, 255, 0.2)',
+          borderColor: 'rgba(50, 100, 200, 0.6)',
+          borderWidth: 1,
+          showLine: true,
+          fill: true,
+          pointRadius: 0,
         },
+          
       ],
     },
     options: {
@@ -72,13 +105,13 @@ export default function drawCompressorMap(config) {
       scales: {
         x: {
           title: { display: true, text: 'Normalized Flow' },
-          min: 0.2,
-          max: 0.8,
+          min: 0.0,
+          max: 1.1,
         },
         y: {
           title: { display: true, text: 'Pressure Ratio' },
           min: 1.0,
-          max: 3.2,
+          max: 6.0,
         },
       },
     },
