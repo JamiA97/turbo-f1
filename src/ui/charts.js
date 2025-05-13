@@ -1,5 +1,6 @@
 import { Chart } from 'chart.js/auto';
 import { setTorqueCurve } from '../simulation/racePhysics.js';
+import { generateTorqueCurve, computeTurboDynamics } from '../simulation/turboModel.js';
 
 let chartInstance = null;
 
@@ -13,7 +14,8 @@ export function updateChart(config) {
   efficiency = Math.max(0.65, Math.min(0.85, efficiency));
 
   // --- Compute inertia
-  const inertia = 0.001 * (compOD ** 2 + turbOD ** 2);
+  //const inertia = 0.001 * (compOD ** 2 + turbOD ** 2);
+  const inertia = 0.00005 * (compOD ** 2 + 5*turbOD ** 2);
 
   // --- Update UI
   const inertiaDisplay = document.getElementById('inertiaDisplay');
@@ -62,24 +64,7 @@ function drawChart() {
   });
 }
 
-function generateTorqueCurve(config) {
-  const rpm = Array.from({ length: 20 }, (_, i) => 1000 + i * 250);
-  const {
-    compOD = 50,
-    compInlet = 30,
-    turbOD = 50,
-    turbOutlet = 40,
-  } = config;
 
-  const peakTorque = 200 + (turbOD - turbOutlet); // Base torque, no η here
-  const peakRPM = 3000 + (compOD - 50) * 25;
-  const width = 800 + (compOD - compInlet) * 10 + (turbOD - turbOutlet) * 20;
-
-  return rpm.map(r => {
-    const torque = peakTorque * Math.exp(-((r - peakRPM) ** 2) / (2 * width ** 2));
-    return Math.round(Math.max(0, torque));
-  });
-}
 
 
 export default drawChart;

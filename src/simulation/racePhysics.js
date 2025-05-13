@@ -1,4 +1,6 @@
-import { generateRPMArray } from './turboModel.js';
+import { computeTurboDynamics, generateRPMArray } from './turboModel.js';
+import { generateTorqueCurve } from './turboModel.js';
+//import { computeTurboDynamics } from './turboModel.js';
 
 let currentTorqueCurve = Array(20).fill(100);
 let currentState = {};
@@ -30,14 +32,15 @@ function runRace(state) {
   const compOD = state.compOD ?? 50;
   const turbOD = state.turbOD ?? 50;
   const torqueCurve = currentTorqueCurve;
+  const { efficiency, inertia } = computeTurboDynamics(state);
 
   // --- Efficiency model (based on compOD / turbOD)
-  const effRatio = compOD / turbOD;
-  let efficiency = 0.85 - Math.abs(effRatio - 1.1) * 0.2 / 0.3;
-  efficiency = Math.max(0.65, Math.min(0.85, efficiency));
+  //const effRatio = compOD / turbOD;
+  //let efficiency = 0.85 - Math.abs(effRatio - 1.1) * 0.2 / 0.3;
+  //efficiency = Math.max(0.65, Math.min(0.85, efficiency));
 
   // --- Inertia from geometry
-  const inertia = 0.001 * (compOD ** 2 + turbOD ** 2);
+  //const inertia = 0.00005 * (compOD ** 2 + 5*turbOD ** 2);
 
   // --- Simulation state
   let v = 0;
@@ -52,7 +55,7 @@ function runRace(state) {
     
     const baseTorque = torque * efficiency;
 
-    const boostRampUpTime = inertia * 2;
+    const boostRampUpTime = inertia * 3;
     const boostFactor = Math.min(1, t / boostRampUpTime);
     const effectiveTorque = baseTorque * boostFactor;
 

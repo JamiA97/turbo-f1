@@ -25,12 +25,14 @@ function createLayout() {
   // Compressor Map (left)
   const mapContainer = document.createElement('div');
   mapContainer.id = 'compressorMap';
-  mapContainer.style.width = '300px';
-  mapContainer.style.height = '300px';
+  mapContainer.style.width = '500px';
+  mapContainer.style.height = '500px';
 
   const chartContainer = document.createElement('div');
   chartContainer.id = 'chart';
-  chartContainer.style.flex = '1';  
+  //chartContainer.style.flex = '1';
+  chartContainer.style.width = '500px';  
+  chartContainer.style.height = '500px';
 
   const inertiaDisplay = document.createElement('div');
   inertiaDisplay.id = 'inertiaDisplay';

@@ -29,6 +29,8 @@ export default function drawCompressorMap(config) {
     { x: 0.1111, y: 1.5 },
   ];
 
+  
+
   // Geometry-based map shift
   const dx = (compInlet - 30) * 0.0025;
   const dy = (compOD - 50) * 0.01;
@@ -42,7 +44,7 @@ export default function drawCompressorMap(config) {
 const shiftedMap = shiftedMapPoints(baseMap, dx, dy);
 
   // --- Efficiency blob center (fixed for now)
-  const effCenter = { x: flowBase, y: prBase };
+  const effCenter = { x: flowBase+0.3, y: prBase+1.0 };
   const effRadiusX = 0.08;
   const effRadiusY = 0.2;
 
@@ -86,6 +88,30 @@ const shiftedMap = shiftedMapPoints(baseMap, dx, dy);
           fill: true,
           pointRadius: 0,
         },
+        {
+          label: 'High Efficiency Zone',
+          type: 'line',  // ✅ important
+          data: generateEfficiencyEllipse(effCenter, 0.1, 0.2, 40),
+          backgroundColor: 'rgba(0, 200, 0, 0.4)',
+          borderColor: 'rgba(0, 200, 0, 0.6)',
+          borderWidth: 1,
+          pointRadius: 0,
+          showLine: true,
+          fill: true,
+        },
+        {
+          label: 'Medium Efficiency Zone',
+          type: 'line',  // ✅ important
+          data: generateEfficiencyEllipse(effCenter, 0.2, 0.4, 40),
+          backgroundColor: 'rgba(0, 200, 0, 0.15)',
+          borderColor: 'rgba(0, 200, 0, 0.3)',
+          borderWidth: 1,
+          pointRadius: 0,
+          showLine: true,
+          fill: true,
+        },
+
+
           
       ],
     },
@@ -128,6 +154,7 @@ function generateEfficiencyEllipse(center, rx, ry, points = 32) {
       y: center.y + ry * Math.sin(theta),
     });
   }
+  out.push(out[0]); // ✅ ensures the shape is closed
   return out;
 }
 
