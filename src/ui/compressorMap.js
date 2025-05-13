@@ -9,11 +9,8 @@ export default function drawCompressorMap(config) {
   const flowBase = 0.3 + (compInlet - 30) * 0.005;
   const prBase = 1.8 + (compOD - 50) * 0.02;
 
-  //const peakTorque = { x: flowBase - 0.05, y: prBase - 0.2 };
-  //const peakPower = { x: flowBase + 0.05, y: prBase + 0.3 };
-
-  const peakTorque = { x: 0.4, y: 2.8 }; // typical lower-flow, lower-PR
-  const peakPower  = { x: 0.8, y: 3.5 }; // typical higher-flow, higher-PR
+  const peakTorque = { x: 0.4, y: 2.8 };
+  const peakPower  = { x: 0.8, y: 3.5 };
 
   // Base compressor map polygon
   const baseMap = [
@@ -29,122 +26,76 @@ export default function drawCompressorMap(config) {
     { x: 0.1111, y: 1.5 },
   ];
 
-  
-
-  // Geometry-based map shift
+  // Shift map by geometry
   const dx = (compInlet - 30) * 0.0025;
   const dy = (compOD - 50) * 0.01;
+  const shiftedMap = baseMap.map(p => ({ x: p.x + dx, y: p.y + dy }));
 
-  // Transform function
-  function shiftedMapPoints(map, dx, dy) {
-    return map.map(p => ({ x: p.x + dx, y: p.y + dy }));
-  }
-
-// Apply shift
-const shiftedMap = shiftedMapPoints(baseMap, dx, dy);
-
-  // --- Efficiency blob center (fixed for now)
-  const effCenter = { x: flowBase+0.3, y: prBase+1.0 };
-  const effRadiusX = 0.08;
-  const effRadiusY = 0.2;
+  // Efficiency zone center (geometry-influenced)
+  const effCenter = { x: flowBase + 0.3, y: prBase + 1.0 };
 
   const ctxId = 'compressorMapCanvas';
   let canvas = document.getElementById(ctxId);
 
-  // Create canvas if not already there
   if (!canvas) {
     canvas = document.createElement('canvas');
     canvas.id = ctxId;
     document.getElementById('compressorMap').appendChild(canvas);
   }
 
-  // If chart exists, destroy before redraw
-  if (mapChart) {
-    mapChart.destroy();
-  }
-
-  mapChart = new Chart(canvas, {
-    type: 'scatter',
-    data: {
-      datasets: [
-        {
-          label: 'Operating Points',
-          data: [
-            { x: peakTorque.x, y: peakTorque.y, label: 'Peak Torque' },
-            { x: peakPower.x, y: peakPower.y, label: 'Peak Power' },
-          ],
-          backgroundColor: ['blue', 'red'],
-          pointRadius: 6,
-          showLine: false,
-          parsing: false,
-        },
-        {
-          label: 'Compressor Map Envelope',
-          data: shiftedMap,  // ✅ use the adjusted points
-          backgroundColor: 'rgba(100, 200, 255, 0.2)',
-          borderColor: 'rgba(50, 100, 200, 0.6)',
-          borderWidth: 1,
-          showLine: true,
-          fill: true,
-          pointRadius: 0,
-        },
-        {
-          label: 'High Efficiency Zone',
-          type: 'line',  // ✅ important
-          data: generateEfficiencyEllipse(effCenter, 0.1, 0.2, 40),
-          backgroundColor: 'rgba(0, 200, 0, 0.4)',
-          borderColor: 'rgba(0, 200, 0, 0.6)',
-          borderWidth: 1,
-          pointRadius: 0,
-          showLine: true,
-          fill: true,
-        },
-        {
-          label: 'Medium Efficiency Zone',
-          type: 'line',  // ✅ important
-          data: generateEfficiencyEllipse(effCenter, 0.2, 0.4, 40),
-          backgroundColor: 'rgba(0, 200, 0, 0.15)',
-          borderColor: 'rgba(0, 200, 0, 0.3)',
-          borderWidth: 1,
-          pointRadius: 0,
-          showLine: true,
-          fill: true,
-        },
-
-
-          
-      ],
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        tooltip: {
-          callbacks: {
-            label: ctx => ctx.raw.label ?? `Flow: ${ctx.raw.x}, PR: ${ctx.raw.y}`,
+  if (!mapChart) {
+    mapChart = new Chart(canvas, {
+      type: 'scatter',
+      data: {
+        datasets: [
+          { label: 'Operating Points', data: [], backgroundColor: ['blue', 'red'], pointRadius: 6, showLine: false, parsing: false },
+          { label: 'Compressor Map Envelope', data: [], backgroundColor: 'rgba(100, 200, 255, 0.2)', borderColor: 'rgba(50, 100, 200, 0.6)', borderWidth: 1, showLine: true, fill: true, pointRadius: 0 },
+          { label: 'High Efficiency Zone', type: 'line', data: [], backgroundColor: 'rgba(0, 200, 0, 0.4)', borderColor: 'rgba(0, 200, 0, 0.6)', borderWidth: 1, pointRadius: 0, showLine: true, fill: true },
+          { label: 'Medium Efficiency Zone', type: 'line', data: [], backgroundColor: 'rgba(0, 200, 0, 0.15)', borderColor: 'rgba(0, 200, 0, 0.3)', borderWidth: 1, pointRadius: 0, showLine: true, fill: true },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: { duration: 0 },
+        plugins: {
+          tooltip: {
+            callbacks: {
+              label: ctx => ctx.raw.label ?? `Flow: ${ctx.raw.x}, PR: ${ctx.raw.y}`,
+            },
+          },
+          legend: {
+            display: false,
           },
         },
-        legend: {
-          display: false,
+        scales: {
+          x: {
+            title: { display: true, text: 'Normalized Flow' },
+            min: 0.0,
+            max: 1.1,
+          },
+          y: {
+            title: { display: true, text: 'Pressure Ratio' },
+            min: 1.0,
+            max: 6.0,
+          },
         },
       },
-      scales: {
-        x: {
-          title: { display: true, text: 'Normalized Flow' },
-          min: 0.0,
-          max: 1.1,
-        },
-        y: {
-          title: { display: true, text: 'Pressure Ratio' },
-          min: 1.0,
-          max: 6.0,
-        },
-      },
-    },
-  });
+    });
+  }
+
+  // Update chart data only
+  mapChart.data.datasets[0].data = [
+    { x: peakTorque.x, y: peakTorque.y, label: 'Peak Torque' },
+    { x: peakPower.x, y: peakPower.y, label: 'Peak Power' },
+  ];
+  mapChart.data.datasets[1].data = shiftedMap;
+  mapChart.data.datasets[2].data = generateEfficiencyEllipse(effCenter, 0.1, 0.2, 40);
+  mapChart.data.datasets[3].data = generateEfficiencyEllipse(effCenter, 0.2, 0.4, 40);
+
+  mapChart.update();
 }
 
-// Generates a circular point cloud for an efficiency zone
 function generateEfficiencyEllipse(center, rx, ry, points = 32) {
   const out = [];
   for (let i = 0; i < points; i++) {
@@ -154,7 +105,6 @@ function generateEfficiencyEllipse(center, rx, ry, points = 32) {
       y: center.y + ry * Math.sin(theta),
     });
   }
-  out.push(out[0]); // ✅ ensures the shape is closed
+  out.push(out[0]); // close shape
   return out;
 }
-
